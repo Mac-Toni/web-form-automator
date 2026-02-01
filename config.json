@@ -1,6 +1,7 @@
 {
   "nome": "Paulo",
   "email": "paulo@email.com",
-  "assunto": "Proposta de Automação",
-  "mensagem": "Olá, vi que vocês têm um formulário e decidi testar meu robô aqui!"
+  "assunto": "Proposta",
+  "mensagem": "Olá...",
+  "modo_real": false
 }

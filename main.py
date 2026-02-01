@@ -11,7 +11,6 @@ def clicar_no_botao_enviar(page):
             # exact=False ajuda a encontrar "Enviar Mensagem" apenas com "Enviar"
             botao = page.get_by_role("button", name=termo, exact=False)
             if botao.is_visible():
-                # print(f"Botão '{termo}' encontrado!") # Removido o click real para segurança
                 return True
         
         # Tenta pelo tipo do input caso não seja um <button>
@@ -50,14 +49,20 @@ def preencher_formulario(page, config):
         print(f"Erro ao preencher: {e}")
 
 def rodar_automacao():
-    with open('config.json', 'r', encoding='utf-8') as f:
-        config = json.load(f)
+    # Carrega as configurações do JSON
+    try:
+        with open('config.json', 'r', encoding='utf-8') as f:
+            config = json.load(f)
+    except Exception as e:
+        print(f"Erro ao ler config.json: {e}")
+        return
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         context = browser.new_context()
         page = context.new_page()
 
+        # Lê a lista de sites
         try:
             df = pd.read_csv('sites.csv')
         except Exception as e:
@@ -68,26 +73,38 @@ def rodar_automacao():
 
         for index, row in df.iterrows():
             url = row['url']
+            # Cria um nome de arquivo limpo para o screenshot
+            nome_arquivo = url.replace("https://", "").replace("http://", "").replace("/", "_").replace(".", "_")[:30]
+            
             try:
+                print(f"Acessando: {url}")
                 page.goto(url, timeout=60000)
                 page.wait_for_timeout(2000)
 
+                # Verifica CAPTCHA
                 if page.locator("iframe[src*='recaptcha']").is_visible() or \
                    page.locator("iframe[src*='hcaptcha']").is_visible():
                     status = "Bloqueado por CAPTCHA"
+                    page.screenshot(path=f"screenshots/captcha_{nome_arquivo}.png")
                 else:
                     preencher_formulario(page, config)
                     status = "Sucesso (Simulado)"
                 
             except Exception as e:
                 status = f"Erro: {str(e)}"
+                try:
+                    page.screenshot(path=f"screenshots/erro_{nome_arquivo}.png")
+                except:
+                    pass
             
             resultados.append({"URL": url, "Status": status})
-            print(f"{url} -> {status}")
+            print(f"Resultado: {status}")
 
+        # Salva o relatório final (FORA do loop for)
         df_report = pd.DataFrame(resultados)
         df_report.to_csv('relatorio_envios.csv', index=False)
-        print("\n--- Processo finalizado! ---")
+        
+        print("\n--- Processo finalizado! Relatório gerado. ---")
         browser.close()
 
 if __name__ == "__main__":

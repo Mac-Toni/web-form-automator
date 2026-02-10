@@ -1,0 +1,5 @@
+config.json
+sites.csv
+relatorio_envios.csv
+screenshots/
+__pycache__/

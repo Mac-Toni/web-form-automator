@@ -1,7 +1,8 @@
 {
   "nome": "Paulo",
   "email": "paulo@email.com",
-  "assunto": "Proposta",
-  "mensagem": "Olá...",
-  "modo_real": false
+  "assunto": "Proposta de Automação",
+  "mensagem": "Olá, vi que vocês têm um formulário e decidi testar meu robô aqui!",
+  "modo_real": false,
+  "api_2captcha": "SUA_CHAVE_AQUI"
 }
